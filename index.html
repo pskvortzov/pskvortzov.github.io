@@ -1,0 +1,147 @@
+
+<html>
+<body>
+
+<style>
+.phrasing_text {
+	display: inline;
+}
+
+span.accent_plain {
+    border-top: solid 1px;
+    padding-top: 1px;
+}
+span.accent_top {
+    color: red;
+    border-top: solid red 1px;
+    padding-top: 1px;
+    background-image: url(/accent.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+}
+
+</style>
+
+
+
+<div id="counter" style="font-size: 26px; position: relative; top: 5%; text-align: center">0 / 96</div>
+<div id="string" style="height: 20px; position: relative; top: 8%; text-align: center; font-size: 200px"></div>
+
+
+<div id="final" style="color: gray;text-align: center; height: 20px; padding: 10px; position: relative; top: 50%"></div>
+<div id="badresult" style="color: pink;text-align: center; height: 20px; padding: 10px; position: relative; top: 53%"></div>
+<div id="hidden" style="color: white;text-align: center; height: 20px; padding: 10px; position: relative; top: 63%"></div>
+
+<script>
+if (!('webkitSpeechRecognition' in window)) {
+	alert("Your browser doesn't support speech recognition.");
+} else {
+	var counter = 0;
+
+    var all_strings = ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ', 'い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り', 'ゐ', 'う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る', 'え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ', 'ゑ', 'お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を', 'ん', 'ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ', 'イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ', 'ヰ', 'ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル', 'エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ', 'ヱ', 'オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ', 'ン'];
+    var strings = all_strings.slice(0);
+
+    var all_meanings = ['а', 'ка,к,как', 'са,со', 'та,да', 'на', 'ха,х,хан', 'ма', 'я', 'ра', 'ва,в', 'и', 'ки,key', 'си,sea', 'чи,ти,че,чип,ты', 'ни,не', 'хи,he', 'ми,mi,мы', 'ри,ре,при', 'ви,уи,вы,we', 'у', 'ку', 'су,сук,суп', 'ту,цу,су,to,too', 'ну', 'фу,ху,фу-фу', 'му,му-му,ну', 'ю,you', 'ру', 'э,е,а', 'кэ,к,kia', 'сэ,с', 'тэ,т,те', 'нэ,н,не,нет', 'хэ,х', 'мэ,м,не', 'рэ,р,рэп', 'вэ,уэ,в', 'о', 'ко,коко,о', 'со', 'то', 'но', 'хо,х', 'мо,но', 'йо,е,я,yo', 'ро', 'во,о', 'н,м', 'а', 'ка,к,как', 'са,со', 'та,да', 'на', 'ха,х,хан', 'ма', 'я', 'ра', 'ва,в', 'и', 'ки,key', 'си,sea', 'чи,ти,че,чип,ты', 'ни,не', 'хи,he', 'ми,mi,мы', 'ри,ре,при', 'ви,уи,вы,we', 'у', 'ку', 'су,сук,суп', 'ту,цу,су,to,too', 'ну', 'фу,ху,фу-фу', 'му,му-му,ну', 'ю,you', 'ру', 'э,е,а', 'кэ,к,kia', 'сэ,с', 'тэ,т,те', 'нэ,н,не,нет', 'хэ,х', 'мэ,м,не', 'рэ,р,рэп', 'вэ,уэ,в', 'о', 'ко,коко,о', 'со', 'то', 'но', 'хо,х', 'мо,но', 'йо,е,я,yo', 'ро', 'во,о', 'н,м'];
+    var meanings = all_meanings.slice(0);
+
+	var randomString = getRandomString();
+
+	var recognition = new webkitSpeechRecognition();
+	var synth = window.speechSynthesis;
+
+	recognition.continuous = false;
+	recognition.interimResults = true;
+	recognition.lang = 'ru-RU';
+
+	recognition.start();
+
+	var interim_span = document.getElementById('interim');
+	var final_span = document.getElementById('final');
+	var string_span = document.getElementById('string');
+	var counter_span = document.getElementById('counter');
+	var badresult_span = document.getElementById('badresult');
+	var hidden_span = document.getElementById('hidden');
+
+	var interim_transcript = '';
+	var final_transcript = '';
+	string_span.innerHTML = randomString[0];
+	counter_span.innerHTML = counter + " / " + 96;
+	hidden_span.innerHTML = randomString[1];
+
+	recognition.onresult = function(event) {
+		interim_transcript = '';
+		final_transcript = '';
+
+		for (var i = event.resultIndex; i < event.results.length; ++i) {
+			if (event.results[i].isFinal) {
+				final_transcript += event.results[i][0].transcript;
+			} else {
+				interim_transcript += event.results[i][0].transcript;
+			}
+		}
+
+		final_span.innerHTML = stripSpecialSymbols(final_transcript);
+		final_span.innerHTML = stripSpecialSymbols(interim_transcript);
+//		recognition.stop();
+
+        if (randomString[1].split(',').indexOf(stripSpecialSymbols(interim_transcript).toLowerCase().replace('ё', 'е')) !== -1) {
+            recognize();
+            final_span.innerHTML = '';
+            badresult_span.innerHTML = '';
+            recognition.abort();
+        }
+	};
+
+	recognition.onend = function(event) {
+		var transcript = stripSpecialSymbols(final_transcript);
+		var string = stripSpecialSymbols(randomString[0]);
+
+		if (randomString[1].split(',').indexOf(transcript.toLowerCase().replace('ё', 'е')) !== -1) {
+            recognize();
+		} else {
+			badresult_span.innerHTML = transcript;
+		}
+
+		final_span.innerHTML = '';
+		recognition.start();
+	}
+}
+
+function recognize() {
+    (new Audio('/Pop.wav')).play();
+    counter++;
+    randomString = getRandomString();
+    string_span.innerHTML = randomString[0];
+    counter_span.innerHTML = counter + " / " + 96;
+    badresult_span.innerHTML = '';
+    hidden_span.innerHTML = randomString[1];
+}
+
+function stripSpecialSymbols(string) {
+	return string.replace(/[\? 、]/g, '', string);
+}
+
+function getRandomString() {
+    if (strings.length == 0) {
+        counter = 0;
+        strings = all_strings.slice(0);
+        meanings = all_meanings.slice(0);
+        recognition.abort();
+    }
+
+	var randomNumber = Math.round(Math.random() * (strings.length - 1));
+	var kanji = strings.splice(randomNumber, 1)[0];
+	var meaning = meanings.splice(randomNumber, 1)[0].toLowerCase();
+
+    return [kanji, meaning];
+}
+
+function synthPhrase() {
+	var phrase = new SpeechSynthesisUtterance(randomString);
+	phrase.voice = synth.getVoices()[59];
+	phrase.volume = 0.6;
+	synth.speak(phrase);
+}
+</script>
+</body>
+</html>
